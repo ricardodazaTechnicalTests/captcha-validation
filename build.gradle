@@ -1,0 +1,60 @@
+plugins {
+	id 'java'
+	id 'application'
+	id 'org.springframework.boot' version '2.5.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+}
+
+group = 'com.electronicid'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+mainClassName = "com.electronicid.captchavalidation.CaptchaValidationApplication"
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	antJUnit
+}
+
+task fatJar(type: Jar) {
+	manifest {
+		attributes 'Implementation-Title': 'Gradle Jar File Example',
+				'Implementation-Version': archiveVersion,
+				'Main-Class': mainClassName
+	}
+	archiveBaseName = project.name + '-all'
+	from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+	with jar
+}
+
+test {
+	reports.junitXml.required = true
+}
+
+task mergeJUnitReports {
+	ext {
+		resultsDir = file("$buildDir/test-results/test")
+		targetDir = file("$buildDir/test-results/merged")
+	}
+
+	doLast {
+		ant.taskdef(name: 'junitreport',
+				classname: 'org.apache.tools.ant.taskdefs.optional.junit.XMLResultAggregator',
+				classpath: configurations.antJUnit.asPath)
+
+		ant.junitreport(todir: resultsDir) {
+			fileset(dir: resultsDir, includes: 'TEST-*.xml')
+			report(todir: targetDir, format: 'frames')
+		}
+	}
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.5.6'
+	implementation 'com.github.cage:cage:1.0'
+	implementation 'junit:junit:4.13.2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}

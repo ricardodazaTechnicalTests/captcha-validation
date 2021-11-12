@@ -1,0 +1,53 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Springboot and Captcha</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+
+     $(document).ready(function () {
+        $("#button-validate").click(function () {
+            $("#captcha-error").html("");
+            let captcha = $("#captcha").val();
+            if (captcha.length > 0) {
+                console.log("Sending captcha to server...")
+                let requestObj = {
+                    'captcha': captcha
+                };
+
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json",
+                    dataType: "json",
+                    data: JSON.stringify(requestObj),
+                    url: "http://localhost:8080/validate",
+                    success: function (data) {
+                        if(data.valid == true) {
+                            window.location.replace("/success")
+                        } else {
+                            if(data.attemps >= data.maxRetries) {
+                                window.location.replace("/exceeded")
+                            }
+                            $("#captcha-error").html("Captcha introducido incorrecto")
+                            $("#button-validate").html("Reintentar")
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<div>
+    <img class="form-control" style="padding:0px;height:80px;" alt="captcha"
+         th:src="${'data:image/png;base64,' + captchaimage}">
+    <input id="captcha" placeholder="Enter captcha..." type="text"/>
+    <button id="button-validate" type="submit">Continuar</button>
+
+    <div> </div>
+    <span id="captcha-error" th:text="${captchaError}" style="color:red"></span>
+</div>
+</body>
+</html>

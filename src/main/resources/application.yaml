@@ -1,0 +1,2 @@
+captchavalidation:
+  maxRetries: 3
